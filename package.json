@@ -16,8 +16,7 @@
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"lint": "prettier --check . && eslint .",
-		"format": "prettier --write .",
-		"postinstall": "./scripts/install-twemoji-assets.sh && ./scripts/install-design-system-static-assets.sh"
+		"format": "prettier --write ."
 	},
 	"devDependencies": {
 		"@commitlint/cli": "^17.1.2",

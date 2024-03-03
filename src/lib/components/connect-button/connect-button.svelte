@@ -3,13 +3,15 @@
   import wallet from '$lib/stores/wallet/wallet.store';
   import Flyout from '../flyout/flyout.svelte';
   import IdentityBadge from '../identity-badge/identity-badge.svelte';
-  // import AccountMenu from '../account-menu/account-menu.svelte';
+  import AccountMenu from '../account-menu/account-menu.svelte';
+  import cupertinoPaneStore from '$lib/stores/cupertino-pane/cupertino-pane.store';
   // import SafeLogo from '../icons/safe-logo.svelte';
 
   $: safeAppMode = Boolean($wallet.safe);
 </script>
 
 {#if $wallet.connected}
+<div class="desktop-only">
   <Flyout>
     <div class="trigger" slot="trigger">
       {#if $wallet.network.chainId == 1}
@@ -39,9 +41,24 @@
       <IdentityBadge hideAvatarOnMobile disableLink size="medium" address={$wallet.address} />
     </div>
     <div slot="content">
-      <!-- <AccountMenu /> -->
+      <AccountMenu />
     </div>
   </Flyout>
+</div>
+<div
+    class="mobile-only"
+    on:click={() => cupertinoPaneStore.openSheet(AccountMenu, undefined)}
+    on:keydown={() => cupertinoPaneStore.openSheet(AccountMenu, undefined)}
+  >
+    <IdentityBadge
+      hideAvatarOnMobile
+      disableLink
+      size="medium"
+      address={$wallet.address}
+      
+    />
+  </div>
+
 {:else}
   <Button  on:click={() => wallet.connect()}>Connect wallet</Button>
 {/if}
@@ -75,5 +92,18 @@
     background-color: var(--color-primary);
     margin-right: -12px;
     z-index: 1;
+  }
+  .mobile-only {
+    display: none;
+  }
+
+  @media (max-width: 768px) {
+    .desktop-only {
+      display: none;
+    }
+
+    .mobile-only {
+      display: initial;
+    }
   }
 </style>

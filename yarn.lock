@@ -2822,6 +2822,11 @@ cssstyle@^2.3.0:
   dependencies:
     cssom "~0.3.6"
 
+cupertino-pane@^1.4.21:
+  version "1.4.21"
+  resolved "https://registry.yarnpkg.com/cupertino-pane/-/cupertino-pane-1.4.21.tgz#452538683c6c2c60da18d9802b4295b70369d0ab"
+  integrity sha512-3bUU1rQ9v76um47NBZPNK940wJHCFPmwofkENqO8zMkTpDQn7rBn6GY0yON0Ou5LsDCOELzq20Ub4OZVEN/ZOQ==
+
 dargs@^7.0.0:
   version "7.0.0"
   resolved "https://registry.yarnpkg.com/dargs/-/dargs-7.0.0.tgz#04015c41de0bcb69ec84050f3d9be0caf8d6d5cc"

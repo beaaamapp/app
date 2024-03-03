@@ -10,11 +10,14 @@
 
   import themeStore from '$lib/stores/theme/theme.store';
 
+  import { page } from '$app/stores';
   import { onMount } from 'svelte';
+  import scroll from '$lib/stores/scroll';
  
 
   onMount(() => {
-
+    scroll.attach();
+    return scroll.detach;
   });
 
   const { primaryColor } = themeStore;

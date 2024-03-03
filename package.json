@@ -3,7 +3,7 @@
 	"version": "0.0.1",
 	"private": true,
 	"scripts": {
-		"dev": "vite dev",
+		"dev": "vite dev --port 5177",
 		"dev:local-env:start-app": "PUBLIC_TEST_MODE=true vite dev",
 		"dev:local-env:start-env": "docker compose up",
 		"dev:local-env:stop-env": "docker compose down",
@@ -67,6 +67,7 @@
 		"@uniswap/default-token-list": "^4.1.0",
 		"@uniswap/token-lists": "^1.0.0-beta.30",
 		"@walletconnect/web3-provider": "^1.8.0",
+		"cupertino-pane": "^1.4.21",
 		"ethers": "^5.7.0",
 		"fuzzysort": "^2.0.3",
 		"radicle-design-system": "github:radicle-dev/radicle-design-system#brandon+jason/drips-restyle",

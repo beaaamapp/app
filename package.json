@@ -67,6 +67,7 @@
 		"@uniswap/default-token-list": "^4.1.0",
 		"@uniswap/token-lists": "^1.0.0-beta.30",
 		"@walletconnect/web3-provider": "^1.8.0",
+		"beaaams-backend": "github:beaaamapp/beaaams-backend",
 		"cupertino-pane": "^1.4.21",
 		"ethers": "^5.7.0",
 		"fuzzysort": "^2.0.3",

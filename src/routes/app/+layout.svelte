@@ -1,7 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import wallet from '$lib/stores/wallet/wallet.store';
-  import Header from '$lib/components/header/header.svelte';
 
   import tokens from '$lib/stores/tokens';
   import ens from '$lib/stores/ens';
@@ -9,17 +8,18 @@
   import streams from '$lib/stores/streams/streams.store';
   import { derived } from 'svelte/store';
   import tickStore from '$lib/stores/tick/tick.store';
-  import ModalLayout from '$lib/components/modal-layout/modal-layout.svelte';
-  import PageTransition from '$lib/components/page-transition/page-transition.svelte';
-  import { navigating } from '$app/stores';
+
   import { getAddressDriverClient } from '$lib/utils/get-beams-clients';
   import globalAdvisoryStore from '$lib/stores/global-advisory/global-advisory.store';
   import GlobalAdvisory from '$lib/components/global-advisory/global-advisory.svelte';
   import Spinner from '$lib/components/spinner/spinner.svelte';
-  import { fly } from 'svelte/transition';
+  import { fade, fly } from 'svelte/transition';
+  import { isSafe } from '$lib/stores/wallet/safe/is-safe';
 
-
-  export let data: { pathname: string };
+  import cupertinoPaneStore from '$lib/stores/cupertino-pane/cupertino-pane.store';
+  import breakpointsStore from '$lib/stores/breakpoints/breakpoints.store';
+  // import fiatEstimates from '$lib/utils/fiat-estimates/fiat-estimates';
+  // import trackRelevantTokens from '$lib/utils/fiat-estimates/track-relevant-tokens';
 
   let walletConnected = false;
   let loaded = false;
@@ -46,10 +46,10 @@
 
       /*
       If the app is not running a safe app, check whether the current address is a Safe. This could be the case
-      if the user is using the WalletConnect Safe App to connect to Beams, instead of using Beams as a Safe App
+      if the user is using the WalletConnect Safe App to connect to Drips, instead of using Drips as a Safe App
       directly. If this is the case, the function triggers a warning modal.
       */
-      
+      if (!safe) warnIfSafe(network.chainId, address);
 
       try {
         await streams.connect((await addressDriverClient.getUserIdByAddress(address)).toString());
@@ -74,7 +74,34 @@
     initializing = false;
   }
 
-  
+  async function warnIfSafe(chainId: number, address: string) {
+    const isASafe = await isSafe(chainId, address);
+
+    if (isASafe) {
+      globalAdvisoryStore.add((resolve) => ({
+        headline: 'Using a Safe?',
+        description:
+          'Instead of connecting to the Safe with WalletConnect, we recommend running Drips as a Safe App directly.',
+        emoji: '⚠️',
+        button: {
+          label: 'Disconnect',
+          handler: () => {
+            wallet.disconnect();
+            resolve();
+          },
+        },
+        secondaryButton: {
+          label: 'Proceed anyway',
+          handler: resolve,
+        },
+        learnMoreLink: {
+          label: 'Learn more',
+          url: '',
+        },
+        fatal: false,
+      }));
+    }
+  }
 
   onMount(async () => {
     await initializeStores();
@@ -92,21 +119,44 @@
     tickStore.start();
     return tickStore.stop;
   });
+
+  onMount(() => {
+    cupertinoPaneStore.attach();
+    return cupertinoPaneStore.detach;
+  });
+
+  onMount(() => {
+    breakpointsStore.attach();
+    return breakpointsStore.detach;
+  });
+
+  // onMount(async () => {
+  //   await fiatEstimates.start();
+  //   trackRelevantTokens.start();
+
+  //   return () => {
+  //     trackRelevantTokens.stop();
+  //     fiatEstimates.stop();
+  //   };
+  // });
 </script>
 
 <GlobalAdvisory />
 
-{#if loaded}
-  <div class="main" in:fly={{ duration: 300, y: 16 }}>
-    <ModalLayout />
-    <div class="page" class:loading={$navigating}>
-      <PageTransition pathname={data.pathname}>
-        <slot />
-      </PageTransition>
-    </div>
+<div id="cupertino-pane">
+  <div class="inner">
+    <div class="dragger" />
+    {#if $cupertinoPaneStore.component}
+      <div class="content">
+        <svelte:component this={$cupertinoPaneStore.component} {...$cupertinoPaneStore.props} />
+      </div>
+    {/if}
   </div>
-  <div class="header" in:fly={{ duration: 300, y: 16 }}>
-    <Header />
+</div>
+
+{#if loaded}
+  <div in:fade={{ duration: 300, delay: 300 }}>
+    <slot />
   </div>
 {:else}
   <div class="loading-state" out:fly={{ duration: 300, y: -16 }}>
@@ -115,26 +165,6 @@
 {/if}
 
 <style>
-  .header {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-  }
-  .page {
-    position: relative;
-    min-height: 100vh;
-    max-width: 75rem;
-    width: 100vw;
-    padding: 6rem 1rem 4rem 1rem;
-    margin: 0 auto;
-    transition: opacity 0.3s;
-  }
-
-  .loading {
-    opacity: 0.5s;
-  }
-
   .loading-state {
     display: fixed;
     height: 100vh;
@@ -143,5 +173,37 @@
     display: flex;
     justify-content: center;
     align-items: center;
+  }
+
+  #cupertino-pane {
+    display: none;
+    background-color: var(--color-background);
+    border-radius: 1rem 1rem 0 0;
+  }
+
+  #cupertino-pane > .inner {
+    padding: 0 0.5rem;
+    align-items: center;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  :global(.cupertino-pane-wrapper .pane) {
+    padding-bottom: 1rem;
+    background-color: var(--color-background);
+    box-shadow: var(--elevation-low);
+  }
+
+  :global(.cupertino-pane-wrapper) {
+    z-index: 200;
+  }
+
+  .dragger {
+    width: 3rem;
+    height: 0.25rem;
+    background-color: var(--color-foreground-level-3);
+    border-radius: 0.25rem;
+    margin: 0 auto;
+    margin-bottom: 0.75rem;
   }
 </style>

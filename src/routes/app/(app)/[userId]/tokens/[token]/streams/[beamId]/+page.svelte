@@ -36,7 +36,7 @@
   import addCustomTokenFlowSteps from '$lib/flows/add-custom-token/add-custom-token-flow-steps';
   import getStreamHistory from '$lib/utils/stream-history';
 
-  const { userId, token: tokenAddress, beamId } = $page.params;
+  const { userId, token: tokenAddress, dripId } = $page.params;
 
   let beamsUserId: string | undefined;
   let streamId: string | undefined;
@@ -133,7 +133,7 @@
     try {
       token = tokens.getByAddress(tokenAddress) ?? unreachable();
       beamsUserId = (await decodeUserId(userId)).beamsUserId;
-      streamId = makeStreamId(beamsUserId, tokenAddress, beamId);
+      streamId = makeStreamId(beamsUserId, tokenAddress, dripId);
     } catch {
       error = 'invalid-id';
       return;
@@ -170,21 +170,21 @@
 </script>
 
 <svelte:head>
-  <title>{stream?.name ?? 'Beaaaam'} | Beams</title>
+  <title>{stream?.name ?? 'Stream'} | Drips</title>
 </svelte:head>
 
 <div class="wrapper">
   {#if error === 'invalid-id'}
     <LargeEmptyState
-  
-      headline="Invalid Beaam ID"
-      description="Please make sure you're supplying a valid Beaam ID in the URL."
+      
+      headline="Invalid stream ID"
+      description="Please make sure you're supplying a valid stream ID in the URL."
     />
   {:else if error === 'unknown-token'}
     <LargeEmptyState
-
+      
       headline="Unknown token"
-      description="This Beaaaaaam is streaming an ERC-20 token which is not supported by default. You can manually add it to your custom tokens list."
+      description="This stream is streaming an ERC-20 token which is not supported by default. You can manually add it to your custom tokens list."
       button={{
         handler: () => modal.show(Stepper, undefined, addCustomTokenFlowSteps(tokenAddress)),
         label: 'Add custom token',
@@ -192,9 +192,9 @@
     />
   {:else if error === 'not-found'}
     <LargeEmptyState
-
-      headline="Beaaaaaam not found"
-      description="We weren't able to find a Beaaaaaam with this ID."
+      
+      headline="Stream not found"
+      description="We weren't able to find a stream with this ID."
     />
   {:else if loading}
     <div class="loading-state" out:fly={{ duration: 300, y: -16 }}>
@@ -204,7 +204,7 @@
     <div class="stream-page" in:fly={{ duration: 300, y: 16 }}>
       <div class="hero">
         <div class="title-and-state">
-          <h1>{stream.name ?? 'beams created'}</h1>
+          <h1>{stream.name ?? 'Unnamed stream'}</h1>
           <StreamStateBadge
             {streamId}
             paused={stream.paused}
@@ -214,9 +214,7 @@
             {tokenAddress}
           />
         </div>
-       
-        
-        <!-- {#if checkIsUser(stream.sender.userId) && stream.managed} -->
+        {#if checkIsUser(stream.sender.userId) && stream.managed}
           <div class="actions">
             {#if stream && !stream.paused}<Button
                 icon={PauseIcon}
@@ -247,7 +245,7 @@
                 >Edit</Button
               >{/if}
           </div>
-        
+        {/if}
       </div>
       <!-- <StreamVisual
         fromAddress={stream.sender.address}
@@ -262,7 +260,7 @@
       <div class="details">
         <div class="key-value">
           <h5 class="key">Total Streamed</h5>
-          <span class="value typo-text-mono-bold highlight" data-testid="total-streamed">
+          <span class="value typo-text-mono highlight" data-testid="total-streamed">
             <FormattedAmount
               amount={estimate?.totalStreamed ?? unreachable()}
               decimals={token?.info.decimals ?? unreachable()}
@@ -286,13 +284,16 @@
           <div class="key-value">
             <div class="with-info-icon">
               <h5 class="key">Remaining balance for token</h5>
-              <Tooltip
-                text={`The Beaaam sender's currently remaining ${token?.info.symbol} balance. When this cannot cover all the sender's Beaaams for this token anymore, all their Beaaams for this token will cease.`}
-              >
+              <Tooltip>
                 <InfoCircleIcon style="height: 1.25rem" />
+                <svelte:fragment slot="tooltip-content">
+                  The stream sender's currently remaining {token?.info.symbol} balance. When this cannot
+                  cover all the sender's streams for this token anymore, all their streams for this token
+                  will cease.
+                </svelte:fragment>
               </Tooltip>
             </div>
-            <span class="value typo-text-mono-bold">
+            <span class="value typo-text-mono">
               <FormattedAmount
                 decimals={token?.info.decimals ?? unreachable()}
                 amount={$balances.accounts[beamsUserId ?? unreachable()].tokens[
@@ -307,10 +308,13 @@
               <h5 class="key">
                 Token {streamState === 'out-of-funds' ? 'ran' : 'runs'} out of funds
               </h5>
-              <Tooltip
-                text={`Projection of when the stream ran or will run out of funds based on the sender's remaining ${token?.info.symbol} balance. This date changes if the sender adds funds, or adds / removes streams for this token.`}
-              >
+              <Tooltip>
                 <InfoCircleIcon style="height: 1.25rem" />
+                <svelte:fragment slot="tooltip-content">
+                  Projection of when the stream ran or will run out of funds based on the sender's
+                  remaining {token?.info.symbol} balance. This date changes if the sender adds funds,
+                  or adds / removes streams for this token.
+                </svelte:fragment>
               </Tooltip>
             </div>
             {#if outOfFundsDate}

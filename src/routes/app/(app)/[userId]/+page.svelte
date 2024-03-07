@@ -6,12 +6,14 @@
   import streams from '$lib/stores/streams';
   import wallet from '$lib/stores/wallet/wallet.store';
   import { onMount } from 'svelte';
-  import Balances from '../dashboard/sections/balances.section.svelte';
-  import Streams from '../dashboard/sections/streams.section.svelte';
+  import Balances from '../streams/sections/balances.section.svelte';
+  import Splits from '../streams/sections/splits.section.svelte';
+  import Streams from '../streams/sections/streams.section.svelte';
+  import SocialLink from '$lib/components/social-link/social-link.svelte';
+  import unreachable from '$lib/utils/unreachable';
   import SectionSkeleton from '$lib/components/section-skeleton/section-skeleton.svelte';
   import { fade, fly } from 'svelte/transition';
   import decodeUserId from '$lib/utils/decode-user-id';
-
 
   $: userId = $page.params.userId;
 
@@ -22,12 +24,12 @@
   const ensRecords = ['description', 'url', 'com.twitter', 'com.github'] as const;
   const socialLinks = ['com.twitter', 'com.github', 'url'] as const;
 
-  let socialLinkValues: { [key in typeof socialLinks[number]]: string } | undefined = undefined;
+  let socialLinkValues: { [key in (typeof socialLinks)[number]]: string } | undefined = undefined;
   let description: string | undefined;
 
   async function fetchEnsRecords(
     ensName: string,
-  ): Promise<{ [key in typeof ensRecords[number]]: string } | undefined> {
+  ): Promise<{ [key in (typeof ensRecords)[number]]: string } | undefined> {
     try {
       const { provider } = $wallet;
 
@@ -76,6 +78,9 @@
     if (name) updateEnsRecords(name);
   }
 
+  function isNetwork(input: string): input is (typeof socialLinks)[number] {
+    return socialLinks.includes(input as (typeof socialLinks)[number]);
+  }
 
   async function fetchRequestedAccount(userId: string) {
     try {
@@ -89,16 +94,17 @@
 
   $: beamsUserId && fetchRequestedAccount(beamsUserId);
 
-
+  
 </script>
 
 <svelte:head>
-  <title>{(address && $ens[address]?.name) ?? address ?? userId} | Beams</title>
-  <meta name="description" content="Beams User Profile" />
+  <title>{(address && $ens[address]?.name) ?? address ?? userId} | Beaaaams</title>
+  <meta name="description" content="Beaaaams User Profile" />
 </svelte:head>
 
 {#if error}
   <LargeEmptyState
+
     headline="Unable to show profile"
     description="We weren't able to find that profile."
   />
@@ -108,20 +114,39 @@
       {#if address}
         <div class="identity">
           <div class="avatar-and-name">
-            <IdentityBadge disableLink {address} size="gigantic" showIdentity={false} />
+            <IdentityBadge
+              disableLink
+              {address}
+              size="gigantic"
+              showIdentity={false}
+              
+            />
             <div class="w-full">
-              <IdentityBadge disableLink {address} size="gigantic" showAvatar={false} />
+              <IdentityBadge
+                disableLink
+                {address}
+                size="gigantic"
+                showAvatar={false}
+                
+              />
             </div>
           </div>
-          
+          <div class="social-links">
+            <div in:fade><SocialLink network="ethereum" value={address} /></div>
+            {#each Object.entries(socialLinkValues ?? {}) as [network, value]}
+              {#if value}<div in:fade>
+                  <SocialLink network={isNetwork(network) ? network : unreachable()} {value} />
+                </div>{/if}
+            {/each}
+          </div>
           {#if description}<p class="description" in:fade>{description}</p>{/if}
         </div>
       {/if}
     </SectionSkeleton>
     <Balances userId={beamsUserId} />
     <Streams userId={beamsUserId} />
-    <!-- <Splits userId={beamsUserId} /> -->
-  
+    <Splits userId={beamsUserId} />
+    
   </div>
 {/if}
 
@@ -136,10 +161,6 @@
     display: flex;
     flex-direction: column;
     gap: 2rem;
-  }
-
-  .beams-v1-banner {
-    padding-bottom: 3rem;
   }
 
   .profile {

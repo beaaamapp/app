@@ -9,7 +9,7 @@
   import balances from '$lib/stores/balances';
   import Amount from '$lib/components/amount/amount.svelte';
   import TokenStat from '$lib/components/token-stat/token-stat.svelte';
-  import Streams from '../../../dashboard/sections/streams.section.svelte';
+  import Streams from '../../../streams/sections/streams.section.svelte';
   import Stepper from '$lib/components/stepper/stepper.svelte';
   import modal from '$lib/stores/modal';
   import wallet from '$lib/stores/wallet/wallet.store';
@@ -83,15 +83,15 @@
 </script>
 
 <svelte:head>
-  <title>{token?.info.name ?? 'Unknown Token'} | Beams</title>
-  <meta name="description" content="Beams Token Page" />
+  <title>{token?.info.name ?? 'Unknown Token'} | Drips</title>
+  <meta name="description" content="Drips Token Page" />
 </svelte:head>
 
 {#if error === 'connected-to-wrong-user'}
   <LargeEmptyState
     headline="Unable to view someone else's token page"
     description="Sorry, but you currently can only view your own token pages."
-
+   
   />
 {:else if error === 'unknown-token'}
   <LargeEmptyState
@@ -101,7 +101,7 @@
       handler: () => modal.show(Stepper, undefined, addCustomTokenFlowSteps(tokenAddress)),
       label: 'Add custom token',
     }}
-
+   
   />
 {:else}
   <article class="flex flex-col gap-16">
@@ -112,7 +112,7 @@
           {token?.info.name ?? 'Unknown token'}
         </h1>
         {#if token?.info.symbol}
-          <h4 class="typo-text-mono-bold" style="color: var(--color-foreground-level-5)">
+          <h4 class="typo-text-mono" style="color: var(--color-foreground-level-5)">
             {token.info.symbol}
           </h4>
         {/if}

@@ -1,6 +1,6 @@
 <script lang="ts">
-  import TokenStreamIcon from 'radicle-design-system/icons/TokenStreams.svelte';
-  import PlusIcon from 'radicle-design-system/icons/Plus.svelte';
+  import TokenStreamIcon from '$lib/static/icons/TokenStreams.svelte';
+  import PlusIcon from '$lib/static/icons/Plus.svelte';
 
   import SectionHeader from '$lib/components/section-header/section-header.svelte';
   import Table, { type RowClickEventPayload } from '$lib/components/table/table.svelte';
